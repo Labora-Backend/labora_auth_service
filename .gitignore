@@ -1,0 +1,74 @@
+# ==============================
+# Environment & Secrets
+# ==============================
+.env
+.env.*
+jwt_key/private.pem
+*.pem
+*.key
+*.crt
+jwt_keys/private.pem
+
+# ==============================
+# Python
+# ==============================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+
+
+# ==============================
+# Virtual Environment
+# ==============================
+venv/
+.venv/
+env/
+ENV/
+
+
+# ==============================
+# Django
+# ==============================
+*.log
+db.sqlite3
+staticfiles/
+media/
+local_settings.py
+
+
+# ==============================
+# Migrations (optional)
+# ==============================
+**/migrations/__pycache__/
+**/migrations/*.pyc
+
+
+# ==============================
+# IDEs
+# ==============================
+.vscode/
+.idea/
+*.iml
+
+
+# ==============================
+# OS
+# ==============================
+.DS_Store
+Thumbs.db
+
+
+# ==============================
+# Docker
+# ==============================
+docker-compose.override.yml
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+dist/
+build/
