@@ -6,7 +6,7 @@ class User(AbstractUser):
     ROLE_CHOICES = (
         ('client', 'Client'),
         ('freelancer', 'Freelancer'),
-        ('admin', 'Admin'),
+        ('labora_admin', 'Admin'),
     )
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     bio = models.TextField(blank=True, null=True)

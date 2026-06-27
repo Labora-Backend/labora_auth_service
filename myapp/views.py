@@ -8,15 +8,19 @@ from django.contrib.auth import authenticate, get_user_model
 from django.core.mail import send_mail
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
+from rest_framework import status
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .models import PasswordResetOTP
 from .serializers import UserSerializer
 from .authentication import generate_tokens
-
+from .permissions.internal_service import (
+    IsInternalService
+)
 User = get_user_model()
 
 
@@ -99,8 +103,6 @@ def send_reset_otp(request):
         recipient_list=[email],
         fail_silently=False
     )
-    print(".....................................")
-
     return Response({"message": "OTP sent to email"})
 
 
@@ -144,6 +146,76 @@ def logout_view(request):
     return Response({"message": "Logout successful"})
 
 
+class InternalBlockUserView(APIView):
+    authentication_classes = []
+    permission_classes = [IsInternalService]
+
+    def patch(self, request, user_id):
+
+        try:
+            user = User.objects.get(id=user_id)
+
+        except User.DoesNotExist:
+
+            return Response(
+                {
+                    "error": "User not found"
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        user.status = "blocked"
+        user.save()
+
+        return Response(
+            {
+                "message": "User blocked successfully"
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+class InternalUnblockUserView(APIView):
+    authentication_classes = []
+    permission_classes = [IsInternalService]
+
+    def patch(self, request, user_id):
+
+        try:
+            user = User.objects.get(id=user_id)
+
+        except User.DoesNotExist:
+
+            return Response(
+                {
+                    "error": "User not found"
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        user.status = "active"
+        user.save()
+
+        return Response(
+            {
+                "message": "User unblocked successfully"
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+class InternalUserStatsView(APIView):
+    authentication_classes = []
+    permission_classes = [IsInternalService]
+
+    def get(self, request):
+
+        return Response({
+            "total_clients": User.objects.filter(role="client").count(),
+            "total_freelancers": User.objects.filter(role="freelancer").count(),
+            "total_admins": User.objects.filter(role="admin").count(),
+            "total_users": User.objects.count(),
+        })
 # ============================
 # UPDATE PROFILE
 # ============================
