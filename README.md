@@ -1,5 +1,6 @@
 # Auth Service
 
+<<<<<<< HEAD
  **Labora Backend** — A secure, scalable Django authentication microservice for the freelancing platform.
 
 
@@ -482,3 +483,95 @@ pip install -r requirements.txt
 **Built with ❤️ for the Labora Freelancing Platform**
 
 </div>
+=======
+Labora Auth Service is the identity service for the Labora freelancing platform. It owns user registration, login, RS256 JWT issuing, profile lookup for authenticated users, password-reset OTPs, and internal user status/statistics operations used by Admin Service.
+
+## Responsibilities
+
+- Store platform users with roles: `client`, `freelancer`, and `labora_admin`.
+- Issue access and refresh JWTs signed with the service private key.
+- Verify authenticated user profile requests.
+- Send password reset OTPs by email and apply password resets.
+- Expose internal user block, unblock, and aggregate user-stat endpoints protected by `X-Service-Key`.
+
+## Features
+
+- Username/email uniqueness checks during registration.
+- Login through Django authentication.
+- RS256 access and refresh token generation.
+- Five-minute password reset OTP flow.
+- User status changes for admin-driven block and unblock workflows.
+
+## API Endpoints
+
+Base path: `/api/`
+
+| Method | Path | Auth | Description |
+| --- | --- | --- | --- |
+| `POST` | `auth/register/` | Public | Create a user with `username`, `password`, `email`, and `role`. |
+| `POST` | `auth/login/` | Public | Authenticate a user and return `access`, `refresh`, `role`, and `username`. |
+| `GET` | `auth/profile/` | Bearer JWT | Return the authenticated user's profile fields. |
+| `POST` | `auth/password-reset/otp/` | Public | Create and email a password reset OTP for a registered email. |
+| `POST` | `auth/password-reset/confirm/` | Public | Reset password using `email`, `otp`, and `new_password`. |
+| `POST` | `auth/logout/` | Bearer JWT | Return a logout acknowledgement. Token invalidation is not implemented. |
+
+## Internal Service Endpoints
+
+Internal endpoints use `X-Service-Key: <SERVICE_API_KEY>`.
+
+| Method | Path | Description |
+| --- | --- | --- |
+| `PATCH` | `internal/users/<user_id>/block/` | Set user `status` to `blocked`. |
+| `PATCH` | `internal/users/<user_id>/unblock/` | Set user `status` to `active`. |
+| `GET` | `internal/users/stats/` | Return counts for clients, freelancers, admins, and all users. |
+
+## Authentication
+
+Public endpoints do not require authentication. Protected endpoints require `Authorization: Bearer <access_token>`. Tokens include `user_id`, `role`, `token_type`, `iat`, and `exp` and are signed with RS256 using `JWT_PRIVATE_KEY_PATH`.
+
+## Environment Variables
+
+| Variable | Purpose |
+| --- | --- |
+| `DJANGO_SECRET_KEY` | Django secret key. |
+| `DEBUG` | Enables Django debug mode when set to `True`. |
+| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | MySQL database configuration loaded by `labora_shared.env_config`. |
+| `JWT_PRIVATE_KEY_PATH` | Private key used to sign JWTs. |
+| `JWT_PUBLIC_KEY_PATH` | Public key used by JWT verification. |
+| `JWT_ACCESS_TOKEN_MINUTES` | Access token lifetime. Defaults to `15`. |
+| `JWT_REFRESH_TOKEN_DAYS` | Refresh token lifetime. Defaults to `7`. |
+| `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | SMTP credentials for OTP email delivery. |
+| `SERVICE_API_KEY` | Shared key for internal service-to-service endpoints. |
+| `*_SERVICE_URL` | Optional service URLs used by the shared configuration pattern. |
+
+## Setup
+
+```bash
+cd labora-freelancing_platform_AuthService
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver 8000
+```
+
+Docker Compose builds this service from `labora-freelancing_platform_AuthService/Dockerfile` and mounts `./jwt_keys` into the container.
+
+## Service Architecture
+
+- Django project: `authservice`
+- App: `myapp`
+- Authentication implementation: `myapp/authentication.py`
+- Public and internal API views: `myapp/views.py`
+- Internal service-key permission: `myapp/permissions/internal_service.py`
+- Database backend: MySQL through shared environment helpers
+
+## Database Models
+
+- `User`: extends Django `AbstractUser` with `role`, `bio`, `profile_image`, and `status`.
+- `PasswordResetOTP`: stores OTP, user reference, and creation timestamp.
+
+## Notification/Event Flow
+
+This service sends password-reset OTPs by SMTP email. It does not publish platform notifications or WebSocket events.
+>>>>>>> 57b5df0 (docs(auth): update service documentation)
